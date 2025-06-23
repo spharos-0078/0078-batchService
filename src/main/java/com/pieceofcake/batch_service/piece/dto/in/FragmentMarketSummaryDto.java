@@ -4,6 +4,6 @@ import java.time.LocalDateTime;
 
 public class FragmentMarketSummaryDto {
     private String pieceProductUuid;
-    private Double price;
+    private Long price;
     private LocalDateTime date;
 }

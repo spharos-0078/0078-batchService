@@ -1,5 +1,7 @@
 package com.pieceofcake.batch_service.piece.application.config;
 
+import com.pieceofcake.batch_service.kafka.producer.DailyTradePieceEvent;
+import com.pieceofcake.batch_service.kafka.producer.KafkaProducer;
 import com.pieceofcake.batch_service.piece.dto.in.DailyFragmentAggregationDto;
 import com.pieceofcake.batch_service.piece.entity.DailyFragmentPriceAggregation;
 import com.pieceofcake.batch_service.piece.infrastructure.DailyAggregationRepository;
@@ -18,6 +20,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
@@ -35,6 +40,7 @@ public class DailyFragmentAggregationJobConfig {
     private final DataSource dataSource;
     private final PlatformTransactionManager transactionManager;
     private final DailyAggregationRepository dailyAggregationRepository;
+    private final KafkaProducer kafkaProducer;
 
     // Job에서 Step을 파라미터로 받아서 사용
     @Bean
@@ -97,11 +103,11 @@ public class DailyFragmentAggregationJobConfig {
 
             return DailyFragmentAggregationDto.builder()
                     .pieceProductUuid(rs.getString("piece_product_uuid"))
-                    .startingPrice(rs.getDouble("starting_price"))
-                    .closingPrice(rs.getDouble("closing_price"))
-                    .minimumPrice(rs.getDouble("minimum_price"))
-                    .maximumPrice(rs.getDouble("maximum_price"))
-                    .averagePrice(rs.getDouble("average_price"))
+                    .startingPrice(rs.getLong("starting_price"))
+                    .closingPrice(rs.getLong("closing_price"))
+                    .minimumPrice(rs.getLong("minimum_price"))
+                    .maximumPrice(rs.getLong("maximum_price"))
+                    .averagePrice(rs.getLong("average_price"))
                     .tradeQuantity(rs.getLong("trade_quantity"))
                     .date(rs.getDate("date").toLocalDate())
                     .build();
@@ -112,7 +118,35 @@ public class DailyFragmentAggregationJobConfig {
     @Bean
     public ItemProcessor<DailyFragmentAggregationDto, DailyFragmentPriceAggregation> dailyAggregationProcessor() {
         //이벤트 발행
-        return DailyFragmentAggregationDto::toEntity;
+//        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+//            @Override
+//            public void afterCommit() {
+//                DailyTradePieceEvent event = DailyTradePieceEvent.builder()
+//                        .pieceProductUuid()
+//                        .build();
+//                kafkaProducer.sendPieceReadEvent(event);
+//            }
+//        });
+//        return DailyFragmentAggregationDto::toEntity;
+        return item -> {
+            DailyFragmentPriceAggregation entity = item.toEntity();
+
+            // 트랜잭션 커밋 이후 이벤트 발행을 보장
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    DailyTradePieceEvent event = DailyTradePieceEvent.builder()
+                            .pieceProductUuid(entity.getPieceProductUuid())
+                            .closingPrice(entity.getClosingPrice())
+                            .tradeQuantity(entity.getTradeQuantity())
+                            .build();
+
+                    kafkaProducer.sendPieceReadEvent(event);
+                }
+            });
+
+            return entity;
+        };
     }
 
     @Bean

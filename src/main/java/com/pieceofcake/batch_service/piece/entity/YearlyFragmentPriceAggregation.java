@@ -16,11 +16,11 @@ public class YearlyFragmentPriceAggregation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String pieceProductUuid;
-    private Double startingPrice;
-    private Double closingPrice;
-    private Double maximumPrice;
-    private Double minimumPrice;
-    private Double averagePrice;
+    private Long startingPrice;
+    private Long closingPrice;
+    private Long maximumPrice;
+    private Long minimumPrice;
+    private Long averagePrice;
     private Long tradeQuantity;
     private int year;
 
@@ -28,11 +28,11 @@ public class YearlyFragmentPriceAggregation {
     public YearlyFragmentPriceAggregation(
             Long id,
             String pieceProductUuid,
-            Double startingPrice,
-            Double closingPrice,
-            Double maximumPrice,
-            Double minimumPrice,
-            Double averagePrice,
+            Long startingPrice,
+            Long closingPrice,
+            Long maximumPrice,
+            Long minimumPrice,
+            Long averagePrice,
             Long tradeQuantity,
             int year
     ){

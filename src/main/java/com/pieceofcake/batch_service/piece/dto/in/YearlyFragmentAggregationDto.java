@@ -9,22 +9,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class YearlyFragmentAggregationDto {
     private String pieceProductUuid;
-    private Double startingPrice;
-    private Double closingPrice;
-    private Double minimumPrice;
-    private Double maximumPrice;
-    private Double averagePrice;
+    private Long startingPrice;
+    private Long closingPrice;
+    private Long minimumPrice;
+    private Long maximumPrice;
+    private Long averagePrice;
     private Long tradeQuantity;
     private int year;
 
     @Builder
     public YearlyFragmentAggregationDto(
             String pieceProductUuid,
-            Double startingPrice,
-            Double closingPrice,
-            Double minimumPrice,
-            Double maximumPrice,
-            Double averagePrice,
+            Long startingPrice,
+            Long closingPrice,
+            Long minimumPrice,
+            Long maximumPrice,
+            Long averagePrice,
             Long tradeQuantity,
             int year
     ){
