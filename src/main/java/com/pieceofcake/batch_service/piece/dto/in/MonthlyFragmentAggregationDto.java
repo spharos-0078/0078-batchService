@@ -10,11 +10,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MonthlyFragmentAggregationDto {
     private String pieceProductUuid;
-    private Double startingPrice;
-    private Double closingPrice;
-    private Double minimumPrice;
-    private Double maximumPrice;
-    private Double averagePrice;
+    private Long startingPrice;
+    private Long closingPrice;
+    private Long minimumPrice;
+    private Long maximumPrice;
+    private Long averagePrice;
     private Long tradeQuantity;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -22,11 +22,11 @@ public class MonthlyFragmentAggregationDto {
     @Builder
     public MonthlyFragmentAggregationDto(
                 String pieceProductUuid,
-                Double startingPrice,
-                Double closingPrice,
-                Double minimumPrice,
-                Double maximumPrice,
-                Double averagePrice,
+                Long startingPrice,
+                Long closingPrice,
+                Long minimumPrice,
+                Long maximumPrice,
+                Long averagePrice,
                 Long tradeQuantity,
                 LocalDate startDate,
                 LocalDate endDate){

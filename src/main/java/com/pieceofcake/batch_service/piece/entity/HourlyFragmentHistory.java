@@ -14,7 +14,7 @@ public class HourlyFragmentHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String pieceProductUuid;
-    private Double price;
+    private Long price;
     private LocalDate date;
 
 }
