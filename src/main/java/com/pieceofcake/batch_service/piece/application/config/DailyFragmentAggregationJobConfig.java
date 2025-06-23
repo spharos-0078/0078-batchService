@@ -111,6 +111,7 @@ public class DailyFragmentAggregationJobConfig {
 
     @Bean
     public ItemProcessor<DailyFragmentAggregationDto, DailyFragmentPriceAggregation> dailyAggregationProcessor() {
+        //이벤트 발행
         return DailyFragmentAggregationDto::toEntity;
     }
 
