@@ -19,6 +19,7 @@ import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -27,10 +28,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,8 +39,8 @@ public class DailyFragmentAggregationJobConfig {
     private final PlatformTransactionManager transactionManager;
     private final DailyAggregationRepository dailyAggregationRepository;
     private final KafkaProducer kafkaProducer;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    // Job에서 Step을 파라미터로 받아서 사용
     @Bean
     public Job dailyFragmentAggregationJob() {
         return new JobBuilder("dailyFragmentAggregationJob", jobRepository)
@@ -50,7 +48,6 @@ public class DailyFragmentAggregationJobConfig {
                 .build();
     }
 
-    // Step은 @StepScope로 jobParameters 주입 받음
     @Bean
     public Step dailyAggregationStep() {
         return new StepBuilder("dailyAggregationStep", jobRepository)
@@ -61,7 +58,6 @@ public class DailyFragmentAggregationJobConfig {
                 .build();
     }
 
-    // Reader도 @StepScope로 jobParameters 주입
     @Bean
     @StepScope
     public JdbcCursorItemReader<DailyFragmentAggregationDto> dailyAggregationReader(
@@ -117,17 +113,7 @@ public class DailyFragmentAggregationJobConfig {
 
     @Bean
     public ItemProcessor<DailyFragmentAggregationDto, DailyFragmentPriceAggregation> dailyAggregationProcessor() {
-        //이벤트 발행
-//        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-//            @Override
-//            public void afterCommit() {
-//                DailyTradePieceEvent event = DailyTradePieceEvent.builder()
-//                        .pieceProductUuid()
-//                        .build();
-//                kafkaProducer.sendPieceReadEvent(event);
-//            }
-//        });
-//        return DailyFragmentAggregationDto::toEntity;
+
         return item -> {
             DailyFragmentPriceAggregation entity = item.toEntity();
 
@@ -144,6 +130,9 @@ public class DailyFragmentAggregationJobConfig {
                     kafkaProducer.sendPieceReadEvent(event);
                 }
             });
+            //종료가 레디스 저장
+            String key = "piece:" + entity.getPieceProductUuid() + ":closingprice";
+            redisTemplate.opsForValue().set(key , entity.getClosingPrice());
 
             return entity;
         };
