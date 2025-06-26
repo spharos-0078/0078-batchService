@@ -21,3 +21,9 @@ eureka:
     service-url:
       defaultZone: http://${EC2_HOST}:8761/eureka/
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
