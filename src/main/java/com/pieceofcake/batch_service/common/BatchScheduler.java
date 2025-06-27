@@ -22,7 +22,7 @@ public class BatchScheduler {
     private final Job hourlyFragmentHistoryJob;
 //    private final Job dailyMemberAssetAggregationJob;
 
-    @Scheduled(cron = "0 5 2 * * * ")
+    @Scheduled(cron = "0 17 2 * * * ")
     public void runHourlyFragmentHistoryJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -32,7 +32,7 @@ public class BatchScheduler {
         jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 7 2 * * * ")
+    @Scheduled(cron = "0 18 2 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -44,7 +44,7 @@ public class BatchScheduler {
 
 //    @Scheduled(cron = "0 6 2 * * * ")
 //    @Scheduled(cron = "0 5 2 L * * ")
-    @Scheduled(cron = "0 9 2 * * * ")
+    @Scheduled(cron = "0 19 2 * * * ")
     public void runMonthlyFragmentAggregationJob() throws Exception{
         LocalDate now = LocalDate.now();
         YearMonth currentMonth = YearMonth.from(now);
@@ -60,7 +60,7 @@ public class BatchScheduler {
         jobLauncher.run(monthlyFragmentAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 11 2 * * * ")
+    @Scheduled(cron = "0 20 2 * * * ")
     public void runYearlyFragmentAggregationJob() throws Exception{
         int year = LocalDate.now().minusMonths(1).getYear();
 
