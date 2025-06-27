@@ -19,8 +19,20 @@ public class BatchScheduler {
     private final Job dailyFragmentAggregationJob;
     private final Job monthlyFragmentAggregationJob;
     private final Job yearlyFragmentAggregationJob;
+    private final Job hourlyFragmentHistoryJob;
+//    private final Job dailyMemberAssetAggregationJob;
 
-    @Scheduled(cron = "0 0 23 * * * ")
+    @Scheduled(cron = "0 5 2 * * * ")
+    public void runHourlyFragmentHistoryJob() throws Exception{
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("time", LocalDateTime.now().toString())
+                .addString("jobName", "HourlyFragmentHistoryJob")
+                .addString("date", LocalDate.now().toString())
+                .toJobParameters();
+        jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
+    }
+
+    @Scheduled(cron = "0 7 2 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -30,21 +42,25 @@ public class BatchScheduler {
         jobLauncher.run(dailyFragmentAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 0 23 1 * * ")
+//    @Scheduled(cron = "0 6 2 * * * ")
+//    @Scheduled(cron = "0 5 2 L * * ")
+    @Scheduled(cron = "0 9 2 * * * ")
     public void runMonthlyFragmentAggregationJob() throws Exception{
         LocalDate now = LocalDate.now();
-        YearMonth previousMonth = YearMonth.from(now).minusMonths(1);
+        YearMonth currentMonth = YearMonth.from(now);
+        LocalDate startDate = currentMonth.atDay(1);
+        LocalDate endDate = currentMonth.atEndOfMonth();
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
                 .addString("jobName", "MonthlyFragmentAggregationJob")
-                .addString("startDate", previousMonth.atDay(1).toString())
-                .addString("endDate", previousMonth.atEndOfMonth().toString())
+                .addString("startDate", startDate.toString())
+                .addString("endDate", endDate.toString())
                 .toJobParameters();
         jobLauncher.run(monthlyFragmentAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 22 14 * * * ")
+    @Scheduled(cron = "0 11 2 * * * ")
     public void runYearlyFragmentAggregationJob() throws Exception{
         int year = LocalDate.now().minusMonths(1).getYear();
 
@@ -56,4 +72,12 @@ public class BatchScheduler {
         jobLauncher.run(yearlyFragmentAggregationJob, jobParameters);
     }
 
+//    @Scheduled(cron = "0 0 */1 * * * ")
+//    public void runDailyMemberAssetAggregationJob() throws Exception{
+//        JobParameters jobParameters = new JobParametersBuilder()
+//                .addString("time", LocalDateTime.now().toString())
+//                .addString("jobName", "DailyMemberAssetAggregationJob")
+//                .toJobParameters();
+//        jobLauncher.run(dailyMemberAssetAggregationJob, jobParameters);
+//    }
 }
