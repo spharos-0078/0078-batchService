@@ -27,7 +27,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -39,7 +41,7 @@ public class DailyFragmentAggregationJobConfig {
     private final PlatformTransactionManager transactionManager;
     private final DailyAggregationRepository dailyAggregationRepository;
     private final KafkaProducer kafkaProducer;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Long> redisTemplate;
 
     @Bean
     public Job dailyFragmentAggregationJob() {
@@ -83,7 +85,7 @@ public class DailyFragmentAggregationJobConfig {
                 "  MIN(price) AS minimum_price, " +
                 "  MAX(price) AS maximum_price, " +
                 "  TRUNCATE(AVG(price),2) AS average_price, " +
-                "  COUNT(*) as trade_quantity, " +
+                "  SUM(quantity) as trade_quantity, " +
                 "  date " +
                 "FROM hourly_fragment_history h1 " +
                 "WHERE date = ? " +
@@ -117,19 +119,6 @@ public class DailyFragmentAggregationJobConfig {
         return item -> {
             DailyFragmentPriceAggregation entity = item.toEntity();
 
-            // 트랜잭션 커밋 이후 이벤트 발행을 보장
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    DailyTradePieceEvent event = DailyTradePieceEvent.builder()
-                            .pieceProductUuid(entity.getPieceProductUuid())
-                            .closingPrice(entity.getClosingPrice())
-                            .tradeQuantity(entity.getTradeQuantity())
-                            .build();
-
-                    kafkaProducer.sendPieceReadEvent(event);
-                }
-            });
             //종료가 레디스 저장
             String key = "piece:" + entity.getPieceProductUuid() + ":closingprice";
             redisTemplate.opsForValue().set(key , entity.getClosingPrice());
@@ -140,6 +129,25 @@ public class DailyFragmentAggregationJobConfig {
 
     @Bean
     public ItemWriter<DailyFragmentPriceAggregation> dailyAggregateWriter(){
-        return dailyAggregationRepository::saveAll;
+        return items -> {
+            // 데이터베이스에 저장
+            dailyAggregationRepository.saveAll(items);
+            
+            // 상품별로 한 번만 이벤트 발행
+            items.forEach(entity -> {
+                DailyTradePieceEvent event = DailyTradePieceEvent.builder()
+                    .pieceProductUuid(entity.getPieceProductUuid())
+                    .closingPrice(entity.getClosingPrice())
+                    .tradeQuantity(entity.getTradeQuantity())
+                    .build();
+                
+                try {
+                    kafkaProducer.sendPieceReadEvent(event);
+                } catch (Exception e) {
+                    // Kafka 연결 실패 시에도 배치 작업은 계속 진행
+                    System.err.println("Kafka 이벤트 발행 실패: " + e.getMessage());
+                }
+            });
+        };
     }
 }

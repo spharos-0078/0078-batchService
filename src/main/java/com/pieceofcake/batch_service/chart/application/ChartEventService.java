@@ -59,10 +59,8 @@ public class ChartEventService implements MessageListener {
     private void retrieveAndSendCurrentRealtime(String pieceProductUuid, Sinks.Many<GetChartRealTimeResponseDto> sink){
         try {
             String key = "pieceVolume:" + pieceProductUuid + ":" + LocalDate.now();
-            System.out.println("key : " + key);
             String jsonData = redisTemplate.opsForList().index(key, -1);  // Redis 리스트에서 마지막 데이터 읽기
 
-            System.out.println("jsonData : " + jsonData);
             if (jsonData != null) {
                 GetChartRealTimeResponseDto event = objectMapper.readValue(jsonData, GetChartRealTimeResponseDto.class);
                 System.out.println("event : " + event.toString());
