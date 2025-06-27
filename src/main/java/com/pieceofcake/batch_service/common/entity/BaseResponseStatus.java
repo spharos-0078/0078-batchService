@@ -188,7 +188,13 @@ public enum BaseResponseStatus {
 
     // 기획전(이벤트)
     NO_EXIST_EVENT(HttpStatus.NOT_FOUND, false, 20040, "기획전 정보가 존재하지 않습니다."),
-    NO_EXIST_PRODUCT_EVENT(HttpStatus.NOT_FOUND, false, 20041, "상품 기획전 정보가 존재하지 않습니다.");
+    NO_EXIST_PRODUCT_EVENT(HttpStatus.NOT_FOUND, false, 20041, "상품 기획전 정보가 존재하지 않습니다."),
+
+
+    //차트
+    NO_DAILY_CHART(HttpStatus.NOT_FOUND, false, 20100, "일별 차트 정보가 존재하지 않습니다."),
+    NO_MONTHLY_CHART(HttpStatus.NOT_FOUND, false, 20101, "월별 차트 정보가 존재하지 않습니다."),
+    NO_YEARLY_CHART(HttpStatus.NOT_FOUND, false, 20102, "연도별 차트 정보가 존재하지 않습니다.");
 
 
     private final HttpStatusCode httpStatusCode;
