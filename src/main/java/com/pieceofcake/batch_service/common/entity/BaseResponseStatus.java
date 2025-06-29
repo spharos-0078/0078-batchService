@@ -194,8 +194,8 @@ public enum BaseResponseStatus {
     //차트
     NO_DAILY_CHART(HttpStatus.NOT_FOUND, false, 20100, "일별 차트 정보가 존재하지 않습니다."),
     NO_MONTHLY_CHART(HttpStatus.NOT_FOUND, false, 20101, "월별 차트 정보가 존재하지 않습니다."),
-    NO_YEARLY_CHART(HttpStatus.NOT_FOUND, false, 20102, "연도별 차트 정보가 존재하지 않습니다.");
-
+    NO_YEARLY_CHART(HttpStatus.NOT_FOUND, false, 20102, "연도별 차트 정보가 존재하지 않습니다."),
+    NO_MY_CHART(HttpStatus.NOT_FOUND, false, 20103, "차트 정보가 존재하지 않습니다.");
 
     private final HttpStatusCode httpStatusCode;
     private final boolean isSuccess;
