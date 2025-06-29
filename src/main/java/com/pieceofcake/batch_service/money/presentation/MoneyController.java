@@ -1,5 +1,6 @@
 package com.pieceofcake.batch_service.money.presentation;
 
+import com.pieceofcake.batch_service.common.entity.BaseResponseEntity;
 import com.pieceofcake.batch_service.money.application.MoneyService;
 import com.pieceofcake.batch_service.money.dto.out.GetAssetPieChartResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +20,9 @@ public class MoneyController {
 
     @Operation(summary = "내자산 원형차트 API")
     @GetMapping
-    public List<GetAssetPieChartResponseDto> getMyAssetPieChart(
+    public BaseResponseEntity<List<GetAssetPieChartResponseDto>> getMyAssetPieChart(
             @RequestHeader(value = "X-Member-Uuid") String memberUuid
     ) {
-        return moneyService.getMyAssetPieChart(memberUuid);
+        return new BaseResponseEntity<>(moneyService.getMyAssetPieChart(memberUuid));
     }
 }
