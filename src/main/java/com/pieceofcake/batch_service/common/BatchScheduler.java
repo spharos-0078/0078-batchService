@@ -31,7 +31,7 @@ public class BatchScheduler {
                 .toJobParameters();
         jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
     }
-
+  
     @Scheduled(cron = "0 10 22 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
