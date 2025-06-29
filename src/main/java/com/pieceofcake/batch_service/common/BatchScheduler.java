@@ -21,6 +21,7 @@ public class BatchScheduler {
     private final Job yearlyFragmentAggregationJob;
     private final Job hourlyFragmentHistoryJob;
     private final Job dailyMemberAssetAggregationJob;
+    private final Job bestPieceProductAggregationJob;
 
     @Scheduled(cron = "0 0 22 * * * ")
     public void runHourlyFragmentHistoryJob() throws Exception{
@@ -31,7 +32,17 @@ public class BatchScheduler {
                 .toJobParameters();
         jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
     }
-  
+
+    @Scheduled(cron = "0 5 22 * * * ")
+    public void RunBestPieceProductAggregationJob() throws Exception{
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("time", LocalDateTime.now().toString())
+                .addString("jobName", "BestPieceProductAggregationJob")
+                .addString("date", LocalDate.now().toString())
+                .toJobParameters();
+        jobLauncher.run(bestPieceProductAggregationJob, jobParameters);
+    }
+
     @Scheduled(cron = "0 10 22 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
