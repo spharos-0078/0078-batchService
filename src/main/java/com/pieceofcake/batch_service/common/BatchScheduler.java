@@ -20,9 +20,9 @@ public class BatchScheduler {
     private final Job monthlyFragmentAggregationJob;
     private final Job yearlyFragmentAggregationJob;
     private final Job hourlyFragmentHistoryJob;
-//    private final Job dailyMemberAssetAggregationJob;
+    private final Job dailyMemberAssetAggregationJob;
 
-    @Scheduled(cron = "0 25 2 * * * ")
+    @Scheduled(cron = "0 0 22 * * * ")
     public void runHourlyFragmentHistoryJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -31,8 +31,8 @@ public class BatchScheduler {
                 .toJobParameters();
         jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
     }
-
-    @Scheduled(cron = "0 26 2 * * * ")
+  
+    @Scheduled(cron = "0 10 22 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -42,9 +42,7 @@ public class BatchScheduler {
         jobLauncher.run(dailyFragmentAggregationJob, jobParameters);
     }
 
-//    @Scheduled(cron = "0 6 2 * * * ")
-//    @Scheduled(cron = "0 5 2 L * * ")
-    @Scheduled(cron = "0 27 2 * * * ")
+    @Scheduled(cron = "0 20 22 L * * ")
     public void runMonthlyFragmentAggregationJob() throws Exception{
         LocalDate now = LocalDate.now();
         YearMonth currentMonth = YearMonth.from(now);
@@ -60,9 +58,9 @@ public class BatchScheduler {
         jobLauncher.run(monthlyFragmentAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 28 2 * * * ")
-    public void runYearlyFragmentAggregationJob() throws Exception{
-        int year = LocalDate.now().minusMonths(1).getYear();
+    @Scheduled(cron = "0 30 22 L 12 *")
+    public void runYearlyFragmentAggregationJob() throws Exception {
+        int year = LocalDate.now().getYear();
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
@@ -72,12 +70,12 @@ public class BatchScheduler {
         jobLauncher.run(yearlyFragmentAggregationJob, jobParameters);
     }
 
-//    @Scheduled(cron = "0 0 */1 * * * ")
-//    public void runDailyMemberAssetAggregationJob() throws Exception{
-//        JobParameters jobParameters = new JobParametersBuilder()
-//                .addString("time", LocalDateTime.now().toString())
-//                .addString("jobName", "DailyMemberAssetAggregationJob")
-//                .toJobParameters();
-//        jobLauncher.run(dailyMemberAssetAggregationJob, jobParameters);
-//    }
+    @Scheduled(cron = "0 0 0/1 * * * ")
+    public void runDailyMemberAssetAggregationJob() throws Exception{
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("time", LocalDateTime.now().toString())
+                .addString("jobName", "DailyMemberAssetAggregationJob")
+                .toJobParameters();
+        jobLauncher.run(dailyMemberAssetAggregationJob, jobParameters);
+    }
 }
