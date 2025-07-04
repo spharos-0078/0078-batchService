@@ -8,31 +8,42 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
+import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Entity
-public class HourlyFragmentHistory {
+public class MinutelyFragmentAggregation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String pieceProductUuid;
-    private Long price;
+    private Long averagePrice;
+    private Long startingPrice;
+    private Long closingPrice;
+    private Long maximumPrice;
+    private Long minimumPrice;
     private Integer quantity;
-    private LocalDate date;
+    private LocalDateTime date;
 
     @Builder
-    public HourlyFragmentHistory(
+    public MinutelyFragmentAggregation(
             Long id,
             String pieceProductUuid,
-            Long price,
+            Long averagePrice,
+            Long startingPrice,
+            Long closingPrice,
+            Long maximumPrice,
+            Long minimumPrice,
             Integer quantity,
-            LocalDate date
+            LocalDateTime date
     ) {
         this.id = id;
         this.pieceProductUuid = pieceProductUuid;
-        this.price = price;
+        this.averagePrice = averagePrice;
+        this.startingPrice = startingPrice;
+        this.closingPrice = closingPrice;
+        this.maximumPrice = maximumPrice;
+        this.minimumPrice = minimumPrice;
         this.quantity = quantity;
         this.date = date;
     }

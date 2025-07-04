@@ -1,7 +1,6 @@
 package com.pieceofcake.batch_service.piece.dto.in;
 
 import com.pieceofcake.batch_service.piece.entity.DailyFragmentPriceAggregation;
-import com.pieceofcake.batch_service.piece.entity.HourlyFragmentHistory;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
