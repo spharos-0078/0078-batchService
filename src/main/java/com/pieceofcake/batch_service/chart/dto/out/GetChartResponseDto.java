@@ -2,6 +2,7 @@ package com.pieceofcake.batch_service.chart.dto.out;
 
 import com.pieceofcake.batch_service.chart.vo.GetFragmentAggregationResponseVo;
 import com.pieceofcake.batch_service.piece.entity.DailyFragmentPriceAggregation;
+import com.pieceofcake.batch_service.piece.entity.MinutelyFragmentAggregation;
 import com.pieceofcake.batch_service.piece.entity.MonthlyFragmentPriceAggregation;
 import com.pieceofcake.batch_service.piece.entity.YearlyFragmentPriceAggregation;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @ToString
@@ -22,6 +24,7 @@ public class GetChartResponseDto {
     private Long maximumPrice;
     private Long averagePrice;
     private Long tradeQuantity;
+    private LocalDateTime dateTime;
     private LocalDate date;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -36,6 +39,7 @@ public class GetChartResponseDto {
             Long maximumPrice,
             Long averagePrice,
             Long tradeQuantity,
+            LocalDateTime dateTime,
             LocalDate date,
             LocalDate startDate,
             LocalDate endDate,
@@ -48,10 +52,24 @@ public class GetChartResponseDto {
         this.maximumPrice = maximumPrice;
         this.averagePrice = averagePrice;
         this.tradeQuantity = tradeQuantity;
+        this.dateTime = dateTime;
         this.date = date;
         this.startDate = startDate;
         this.endDate = endDate;
         this.year = year;
+    }
+
+    public static GetChartResponseDto fromMinutely(MinutelyFragmentAggregation aggregation) {
+        return GetChartResponseDto.builder()
+                .pieceProductUuid(aggregation.getPieceProductUuid())
+                .startingPrice(aggregation.getStartingPrice())
+                .closingPrice(aggregation.getClosingPrice())
+                .minimumPrice(aggregation.getMinimumPrice())
+                .maximumPrice(aggregation.getMaximumPrice())
+                .averagePrice(aggregation.getAveragePrice())
+                .tradeQuantity(Long.valueOf(aggregation.getQuantity()))
+                .dateTime(aggregation.getDate())
+                .build();
     }
 
     public static GetChartResponseDto fromDaily(DailyFragmentPriceAggregation aggregation) {
@@ -94,6 +112,7 @@ public class GetChartResponseDto {
                 .build();
     }
 
+
     public GetFragmentAggregationResponseVo toVo(){
         return GetFragmentAggregationResponseVo.builder()
                 .pieceProductUuid(this.pieceProductUuid)
@@ -103,6 +122,7 @@ public class GetChartResponseDto {
                 .maximumPrice(this.maximumPrice)
                 .averagePrice(this.averagePrice)
                 .tradeQuantity(this.tradeQuantity)
+                .dateTime(this.dateTime)
                 .date(this.date)
                 .startDate(this.startDate)
                 .endDate(this.endDate)

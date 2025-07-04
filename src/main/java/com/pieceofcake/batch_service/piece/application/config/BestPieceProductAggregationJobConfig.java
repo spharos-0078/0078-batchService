@@ -64,12 +64,12 @@ public class BestPieceProductAggregationJobConfig {
         reader.setSql("select * " +
                 "from ( " +
                 "    select " +
-                "        h.piece_product_uuid, " +
-                "        sum(h.quantity) as total_quantity, " +
-                "        rank() over (order by sum(h.quantity) desc) as ranking " +
-                "    from hourly_fragment_history h " +
-                "    where h.date = ? " +
-                "    group by h.piece_product_uuid " +
+                "        m.piece_product_uuid, " +
+                "        sum(m.quantity) as total_quantity, " +
+                "        rank() over (order by sum(m.quantity) desc) as ranking " +
+                "    from minutely_fragment_aggregation m " +
+                "    where DATE(m.date) = ? " +
+                "    group by m.piece_product_uuid " +
                 ") ranked " +
                 "limit 50");
 

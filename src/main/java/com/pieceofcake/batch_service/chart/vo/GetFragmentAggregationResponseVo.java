@@ -3,6 +3,7 @@ package com.pieceofcake.batch_service.chart.vo;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -17,6 +18,7 @@ public class GetFragmentAggregationResponseVo {
     private Long maximumPrice;
     private Long averagePrice;
     private Long tradeQuantity;
+    private LocalDateTime dateTime;
     private LocalDate date;
     private LocalDate startDate;
     private LocalDate endDate;

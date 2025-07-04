@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 
 @RequiredArgsConstructor
@@ -19,22 +20,28 @@ public class BatchScheduler {
     private final Job dailyFragmentAggregationJob;
     private final Job monthlyFragmentAggregationJob;
     private final Job yearlyFragmentAggregationJob;
-    private final Job hourlyFragmentHistoryJob;
+    private final Job minutelyFragmentAggregationJob;
     private final Job dailyMemberAssetAggregationJob;
     private final Job bestPieceProductAggregationJob;
 
-    @Scheduled(cron = "0 0 22 * * * ")
-    public void runHourlyFragmentHistoryJob() throws Exception{
+    @Scheduled(cron = "0 */1 * * * *")
+    public void runMinutelyFragmentAggregationJob() throws Exception {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = now.withSecond(0).withNano(0);
+        LocalDateTime endTime = now.withSecond(59).withNano(0);
+
         JobParameters jobParameters = new JobParametersBuilder()
-                .addString("time", LocalDateTime.now().toString())
-                .addString("jobName", "HourlyFragmentHistoryJob")
-                .addString("date", LocalDate.now().toString())
+                .addString("jobName", "minutelyFragmentAggregationJob")
+                .addString("time", now.toString())
+                .addString("startTime", startTime.toString()) // ex: 22:00:00
+                .addString("endTime", endTime.toString())     // ex: 22:01:00
                 .toJobParameters();
-        jobLauncher.run(hourlyFragmentHistoryJob, jobParameters);
+
+        jobLauncher.run(minutelyFragmentAggregationJob, jobParameters);
     }
 
     @Scheduled(cron = "0 5 22 * * * ")
-    public void RunBestPieceProductAggregationJob() throws Exception{
+    public void runBestPieceProductAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
                 .addString("jobName", "BestPieceProductAggregationJob")
@@ -43,12 +50,13 @@ public class BatchScheduler {
         jobLauncher.run(bestPieceProductAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 10 22 * * * ")
+    @Scheduled(cron = "0 0 22 * * * ")
     public void runDailyFragmentAggregationJob() throws Exception{
+        LocalDate date = LocalDate.now();
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())
                 .addString("jobName", "DailyFragmentAggregationJob")
-                .addString("date", LocalDate.now().toString())
+                .addString("date", date.toString())
                 .toJobParameters();
         jobLauncher.run(dailyFragmentAggregationJob, jobParameters);
     }
@@ -81,7 +89,7 @@ public class BatchScheduler {
         jobLauncher.run(yearlyFragmentAggregationJob, jobParameters);
     }
 
-    @Scheduled(cron = "0 0 0/1 * * * ")
+    @Scheduled(cron = "0 0/10 * * * * ")
     public void runDailyMemberAssetAggregationJob() throws Exception{
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", LocalDateTime.now().toString())

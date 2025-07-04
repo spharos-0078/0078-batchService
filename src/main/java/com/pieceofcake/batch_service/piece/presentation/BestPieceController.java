@@ -17,7 +17,7 @@ public class BestPieceController {
 
     private final BestPieceProductService bestPieceProductService;
 
-    @Operation(summary = "베스트 조각 상품 조회 API")
+    @Operation(summary = "베스트 조각 상품 조회 API", description = "현재 기준 베스트 조각 상품 목록을 조회합니다.")
     @GetMapping
     public BaseResponseEntity<List<String>> getBestPieceProduct(){
         return new BaseResponseEntity<>(bestPieceProductService.getBestPieceProductUuids());

@@ -59,36 +59,36 @@ public class DailyFragmentAggregationJobConfig {
     public JdbcCursorItemReader<DailyFragmentAggregationDto> dailyAggregationReader(
             @Value("#{jobParameters['date']}") String dateStr
     ) {
-        LocalDate date = LocalDate.parse(dateStr);
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("date", date);
-
         JdbcCursorItemReader<DailyFragmentAggregationDto> reader = new JdbcCursorItemReader<>();
         reader.setDataSource(dataSource);
-        reader.setSql("SELECT " +
-                "  piece_product_uuid, " +
-                "  (SELECT price " +
-                "   FROM hourly_fragment_history h2 " +
-                "   WHERE h2.piece_product_uuid = h1.piece_product_uuid AND h2.date = ? " +
-                "   ORDER BY id ASC LIMIT 1) AS starting_price, " +
-                "  (SELECT price " +
-                "   FROM hourly_fragment_history h2 " +
-                "   WHERE h2.piece_product_uuid = h1.piece_product_uuid AND h2.date = ? " +
-                "   ORDER BY id DESC LIMIT 1) AS closing_price, " +
-                "  MIN(price) AS minimum_price, " +
-                "  MAX(price) AS maximum_price, " +
-                "  TRUNCATE(AVG(price),2) AS average_price, " +
-                "  SUM(quantity) as trade_quantity, " +
-                "  date " +
-                "FROM hourly_fragment_history h1 " +
-                "WHERE date = ? " +
-                "GROUP BY piece_product_uuid");
+        reader.setSql("""
+        SELECT
+            piece_product_uuid,
+            (SELECT starting_price
+             FROM minutely_fragment_aggregation m2
+             WHERE m2.piece_product_uuid = m1.piece_product_uuid
+               AND DATE(m2.date) = ?
+             ORDER BY m2.date ASC
+             LIMIT 1) AS starting_price,
+            (SELECT closing_price
+             FROM minutely_fragment_aggregation m3
+             WHERE m3.piece_product_uuid = m1.piece_product_uuid
+               AND DATE(m3.date) = ?
+             ORDER BY m3.date DESC
+             LIMIT 1) AS closing_price,
+            MIN(minimum_price) AS minimum_price,
+            MAX(maximum_price) AS maximum_price,
+            AVG(average_price) AS average_price,
+            SUM(quantity) AS trade_quantity
+        FROM minutely_fragment_aggregation m1
+        WHERE DATE(m1.date) = ?
+        GROUP BY piece_product_uuid
+        """);
 
         reader.setPreparedStatementSetter(ps -> {
-            ps.setDate(1, java.sql.Date.valueOf(date));
-            ps.setDate(2, java.sql.Date.valueOf(date));
-            ps.setDate(3, java.sql.Date.valueOf(date));
+            ps.setDate(1, java.sql.Date.valueOf(dateStr));
+            ps.setDate(2, java.sql.Date.valueOf(dateStr));
+            ps.setDate(3, java.sql.Date.valueOf(dateStr));
         });
 
         reader.setRowMapper((rs, rowNum) -> {
@@ -101,7 +101,7 @@ public class DailyFragmentAggregationJobConfig {
                     .maximumPrice(rs.getLong("maximum_price"))
                     .averagePrice(rs.getLong("average_price"))
                     .tradeQuantity(rs.getLong("trade_quantity"))
-                    .date(rs.getDate("date").toLocalDate())
+                    .date(LocalDate.parse(dateStr))
                     .build();
         });
         return reader;
@@ -126,7 +126,7 @@ public class DailyFragmentAggregationJobConfig {
         return items -> {
             // 데이터베이스에 저장
             dailyAggregationRepository.saveAll(items);
-            
+            System.out.println("배치 실행");
             // 상품별로 한 번만 이벤트 발행
             items.forEach(entity -> {
                 DailyTradePieceEvent event = DailyTradePieceEvent.builder()
